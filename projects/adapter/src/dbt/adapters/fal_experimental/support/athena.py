@@ -1,7 +1,7 @@
 from typing import Any
 import six
 from dbt.adapters.base.relation import BaseRelation
-from dbt.contracts.connection import AdapterResponse
+from dbt.adapters.contracts.connection import AdapterResponse
 from dbt.adapters.fal.wrappers import FalCredentialsWrapper
 import sqlalchemy
 import pandas as pd

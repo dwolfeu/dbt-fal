@@ -11,19 +11,16 @@ from typing import (
 )
 
 from dbt.adapters.factory import get_adapter
-from dbt.exceptions import (
+from dbt_common.exceptions import (
     NotImplementedError,
     DbtRuntimeError,
 )
 from dbt.contracts.graph.nodes import ResultNode
 from dbt.adapters.protocol import AdapterConfig, ConnectionManagerProtocol
-from dbt.events.functions import fire_event
-from dbt.events.types import (
-    CodeExecution,
-    CodeExecutionStatus,
-)
+from dbt_common.events.functions import fire_event
+from dbt.adapters.events import types as adapter_types
 from dbt.adapters.base.meta import AdapterMeta, available
-from dbt.contracts.connection import Credentials, Connection, AdapterResponse
+from dbt.adapters.contracts.connection import Credentials, Connection, AdapterResponse
 
 
 def log_code_execution(code_execution_function):
@@ -34,11 +31,11 @@ def log_code_execution(code_execution_function):
     def execution_with_log(*args):
         self = args[0]
         connection_name = self.connections.get_thread_connection().name
-        fire_event(CodeExecution(conn_name=connection_name, code_content=args[2]))
+        fire_event(adapter_types.CodeExecution(conn_name=connection_name, code_content=args[2]))
         start_time = time.time()
         response = code_execution_function(*args)
         fire_event(
-            CodeExecutionStatus(
+            adapter_types.CodeExecutionStatus(
                 status=response._message, elapsed=round((time.time() - start_time), 2)
             )
         )

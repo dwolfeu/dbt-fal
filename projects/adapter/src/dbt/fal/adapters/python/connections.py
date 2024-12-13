@@ -16,15 +16,12 @@ from typing import (
     Iterable,
     Callable,
 )
-
-from dbt.exceptions import (
+from dbt_common.exceptions import (
     NotImplementedError,
-    InvalidConnectionError,
     DbtInternalError,
     CompilationError,
-    FailedToConnectError,
 )
-from dbt.contracts.connection import (
+from dbt.adapters.contracts.connection import (
     Connection,
     Identifier,
     ConnectionState,
@@ -32,14 +29,13 @@ from dbt.contracts.connection import (
     LazyHandle,
     AdapterResponse,
 )
-from dbt.events import AdapterLogger
-from dbt.events.functions import fire_event
-from dbt.events.types import (
-    NewConnection,
-    ConnectionReused,
-    ConnectionLeftOpen,
-    ConnectionClosed,
+from dbt.adapters.exceptions import (
+    InvalidConnectionError,
+    FailedToConnectError,
 )
+from dbt.adapters.events.logging import AdapterLogger
+from dbt_common.events.functions import fire_event
+from dbt.adapters.events import types as adapter_types
 from dbt import flags
 
 SleepTime = Union[int, float]  # As taken by time.sleep.
@@ -128,10 +124,10 @@ class PythonConnectionManager(metaclass=abc.ABCMeta):
         if conn.name == conn_name and conn.state == "open":
             return conn
 
-        fire_event(NewConnection(conn_name=conn_name, conn_type=self.TYPE))
+        fire_event(adapter_types.NewConnection(conn_name=conn_name, conn_type=self.TYPE))
 
         if conn.state == "open":
-            fire_event(ConnectionReused(conn_name=conn_name))
+            fire_event(adapter_types.ConnectionReused(conn_name=conn_name))
         else:
             conn.handle = LazyHandle(self.open)
 
@@ -281,9 +277,9 @@ class PythonConnectionManager(metaclass=abc.ABCMeta):
         with self.lock:
             for connection in self.thread_connections.values():
                 if connection.state not in {"closed", "init"}:
-                    fire_event(ConnectionLeftOpen(conn_name=connection.name))
+                    fire_event(adapter_types.ConnectionLeftOpen(conn_name=connection.name))
                 else:
-                    fire_event(ConnectionClosed(conn_name=connection.name))
+                    fire_event(adapter_types.ConnectionClosed(conn_name=connection.name))
                 self.close(connection)
 
             # garbage collect these connections

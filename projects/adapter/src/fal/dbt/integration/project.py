@@ -35,7 +35,7 @@ from dbt.contracts.graph.manifest import (
 )
 
 from dbt.node_types import NodeType
-from dbt.contracts.connection import AdapterResponse
+from dbt.adapters.contracts.connection import AdapterResponse
 from dbt.contracts.results import (
     RunResultsArtifact,
     RunResultOutput,

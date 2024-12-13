@@ -11,7 +11,7 @@ import threading
 import dbt.flags as flags
 import dbt.adapters.factory as adapters_factory
 
-from dbt.contracts.connection import AdapterResponse
+from dbt.adapters.contracts.connection import AdapterResponse
 from dbt.adapters.sql import SQLAdapter
 from dbt.adapters.base import BaseRelation, BaseAdapter, BaseConnectionManager
 from dbt.config import RuntimeConfig
@@ -269,7 +269,7 @@ def _build_table_from_parts(
     schema: Optional[str],
     identifier: Optional[str],
 ) -> BaseRelation:
-    from dbt.contracts.relation import Path, RelationType
+    from dbt.adapters.contracts.relation import Path, RelationType
 
     path = Path(database, schema, identifier)
 
