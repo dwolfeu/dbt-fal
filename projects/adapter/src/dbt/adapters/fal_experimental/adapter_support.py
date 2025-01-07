@@ -17,7 +17,7 @@ _SQLALCHEMY_DIALECTS = {
 }
 
 
-def _get_alchemy_engine(adapter: BaseAdapter, connection: Connection) -> Any:
+def _get_alchemy_engine(adapter: BaseAdapter, connection: Connection, database: str = None) -> Any:
     # The following code heavily depends on the implementation
     # details of the known adapters, hence it can't work for
     # arbitrary ones.
@@ -29,7 +29,7 @@ def _get_alchemy_engine(adapter: BaseAdapter, connection: Connection) -> Any:
     if adapter_type == "trino":
         import dbt.adapters.fal_experimental.support.trino as support_trino
 
-        return support_trino.create_engine(adapter)
+        return support_trino.create_engine(adapter,database)
 
     elif adapter_type == "sqlserver":
         sqlalchemy_kwargs["creator"] = lambda *args, **kwargs: connection.handle
@@ -164,7 +164,7 @@ def read_relation_as_df(adapter: BaseAdapter, relation: BaseRelation) -> pd.Data
 
     else:
         with new_connection(adapter, "fal:read_relation_as_df") as connection:
-            alchemy_engine = _get_alchemy_engine(adapter, connection)
+            alchemy_engine = _get_alchemy_engine(adapter, connection, relation.database)
 
             return pd.read_sql_table(
                 con=alchemy_engine,

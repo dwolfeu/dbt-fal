@@ -5,15 +5,18 @@ from trino.sqlalchemy import URL
 from dbt.adapters.trino.connections import TrinoCredentials
 import sqlalchemy
 
-def create_engine(adapter: BaseAdapter) -> Any:
+def create_engine(adapter: BaseAdapter, catalog: str = None) -> Any:
     creds = adapter.config.credentials
 
     connect_args = _build_connect_args(creds)
 
+    if not catalog:
+        catalog = creds.database
+
     url = URL(
         host=creds.host,
         port=creds.port,
-        catalog=creds.database,
+        catalog=catalog,
         user=creds.user
     )
     return sqlalchemy.create_engine(url, connect_args=connect_args)
